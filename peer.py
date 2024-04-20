@@ -12,7 +12,7 @@ peer_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 id = 0
 seq = 0
 
-def sendPacket(dataPacket):
+def sendPacketWithTimeout(dataPacket):
     while True:
         try:
             peer_socket.sendto(pickle.dumps(dataPacket), ('localhost', sender_port))
@@ -23,6 +23,9 @@ def sendPacket(dataPacket):
         except socket.timeout:
             print("Timeout occurred. Retrying...")
 
+
+def sendPacket(dataPacket):
+    peer_socket.sendto(pickle.dumps(dataPacket), ('localhost', sender_port))
 
 def listenToPackets():
     chunks = set()
@@ -56,16 +59,16 @@ if __name__ == "__main__":
 
     if wantToInitiate=="y":
         print("trying to connect")
-        sendPacket(DataPacket(id, seq, "SYN", False, calculate_ascii_comb("SYN")))
+        sendPacketWithTimeout(DataPacket(id, seq, "SYN", False, calculate_ascii_comb("SYN")))
         connection_state = ConnectionState.SYN_SENT
-        peer_socket.sendto(pickle.dumps(DataPacket(id, seq, "SYN", False, calculate_ascii_comb("SYN"))), ('localhost', sender_port))
+        sendPacket(pickle.dumps(DataPacket(id, seq, "SYN", False, calculate_ascii_comb("SYN"))))
         connection_state = ConnectionState.ESTABLISHED
     else:
         message, peer1_address = peer_socket.recvfrom(1000)
         if peer1_address[1]!=sender_port:
             #Another client trying to connect
             pass
-        sendPacket(DataPacket(id, seq, "SYNCACK", False, calculate_ascii_comb("SYNC-ACK")))
+        sendPacketWithTimeout(DataPacket(id, seq, "SYNCACK", False, calculate_ascii_comb("SYNC-ACK")))
         connection_state = ConnectionState.ESTABLISHED
 
     print("connection established")
@@ -79,6 +82,6 @@ if __name__ == "__main__":
         for i in range(0, len(message_parts)):
             data = message_parts[i]
             print(calculate_ascii_comb(data))
-            sendPacket(DataPacket(id, seq, data, i == len(message_parts) - 1, calculate_ascii_comb(data)))
+            sendPacketWithTimeout(DataPacket(id, seq, data, i == len(message_parts) - 1, calculate_ascii_comb(data)))
             seq += len(data)
         id += 1
