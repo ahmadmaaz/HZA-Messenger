@@ -1,4 +1,4 @@
-from exceptions import CorruptedPacket
+from exceptions import CorruptedPacket,DropPacket
 def calculate_ascii_comb(data):
     ascii=0
     for i in range(0,len(data)-1):
@@ -7,14 +7,14 @@ def calculate_ascii_comb(data):
     return ascii
 
 
-def validate_packet(packet,seq = None):
+def validate_packet(packet,seq = None,clientSeq = -1):
     checkAscii = calculate_ascii_comb(packet.data)
     if (checkAscii != packet.checkAscii ) or (packet.data=="False" and packet.ackSeq!= None):
         raise CorruptedPacket("Corrupted Packet")
-    if seq!=None and packet.ackSeq!=seq:
-        raise Exception("Not expected seq, requesting again")
     if seq==None and packet.ackSeq!=None:
-        raise Exception("Not expected ack")
+        raise DropPacket("Not expected ack")
+
+
 
 
 
