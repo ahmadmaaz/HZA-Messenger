@@ -13,21 +13,29 @@ peer_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 id = 0
 seq = 0  # Initialize seq
 
-def send_packet_with_timeout(dataPacket, seq=None):
+def send_packet_with_timeout(dataPacket):
     while True:
         try:
             peer_socket.sendto(pickle.dumps(dataPacket), ('localhost', sender_port))
             peer_socket.settimeout(1.75)
-            message, peer1_address = peer_socket.recvfrom(1000)
+            while True:
+                try:
+                    message, peer1_address = peer_socket.recvfrom(1000)
+                    break
+                except socket.timeout:
+                    raise socket.timeout
+                except Exception as e:
+                    print(e)
+                    pass
             packet = pickle.loads(message)
-            validate_packet(packet, seq)
             peer_socket.settimeout(0)
-            return message
+            return packet
         except socket.timeout:
             print("Timeout occurred. Retrying...")
         except CorruptedPacket as e:
             print(e)
         except Exception as e:
+            print(e)
             pass
 
 def send_packet(dataPacket):
@@ -41,16 +49,18 @@ def listen_to_packets():
             if peer1_address[1] != sender_port:
                 raise Exception("Received packet from different port")
             packet = pickle.loads(message)
+            if(packet.data=="SYNACK"):
+                send_packet(pickle.dumps(DataPacket(id, seq, "ACK", False, calculate_ascii_comb("ACK"),0)))
+                continue
             validate_packet(packet)
-            print(f"Received '{packet.data}', id '{packet.id}', seq '{packet.seq}' ")
             chunks.add((packet.data, packet.seq))
             if packet.finalChunk:
                 sorted_chunks = sorted(chunks, key=lambda x: x[1])
                 print(''.join(chunk[0] for chunk in sorted_chunks))
                 chunks.clear()
-            send_packet(DataPacket(id, seq, "True", False, calculate_ascii_comb("True"), packet.seq))
+            send_packet(DataPacket(id, seq, "True", False, calculate_ascii_comb("True"),packet.seq))
         except CorruptedPacket as e:
-            send_packet(DataPacket(id, seq, "False", False, calculate_ascii_comb("False"), packet.seq))
+            send_packet(DataPacket(id, seq, "False", False, calculate_ascii_comb("False"),packet.seq))
             print(e)
         except Exception as e:
             pass
@@ -63,28 +73,23 @@ if __name__ == "__main__":
 
     if want_to_initiate == "y":
         print("trying to connect")
-        send_packet_with_timeout(DataPacket(id, seq, "SYN", False, calculate_ascii_comb("SYN"),0), seq)
-
+        send_packet_with_timeout(DataPacket(id, seq, "SYN", False, calculate_ascii_comb("SYN")))
         connection_state = ConnectionState.SYN_SENT
-        send_packet(pickle.dumps(DataPacket(id, seq, "ACK", False, calculate_ascii_comb("ACK"),0), seq))
-
+        send_packet(pickle.dumps(DataPacket(id, seq, "ACK", False, calculate_ascii_comb("ACK"),0)))
         connection_state = ConnectionState.ESTABLISHED
     else:
         message, peer1_address = peer_socket.recvfrom(1000)
-        send_packet_with_timeout(DataPacket(id, seq, "SYNACK", False, calculate_ascii_comb("SYNACK"),0), seq)
+        send_packet_with_timeout(DataPacket(id, seq, "SYNACK", False, calculate_ascii_comb("SYNACK"),0))
         connection_state = ConnectionState.ESTABLISHED
 
     print("connection established")
     receive_thread = threading.Thread(target=listen_to_packets)
     receive_thread.start()
     while True:
-        if connection_state != ConnectionState.ESTABLISHED:
-            continue
         msg = input("What do you want to send: ")
         message_parts = [msg[i:i + 6] for i in range(0, len(msg), 6)]
         for i in range(0, len(message_parts)):
             data = message_parts[i]
-            print(calculate_ascii_comb(data))
-            send_packet_with_timeout(DataPacket(id, seq, data, i == len(message_parts) - 1, calculate_ascii_comb(data)), seq)
+            send_packet_with_timeout(DataPacket(id, seq, data, i == len(message_parts) - 1, calculate_ascii_comb(data)))
             seq += len(data)
         id += 1

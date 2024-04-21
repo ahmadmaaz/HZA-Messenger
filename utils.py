@@ -9,12 +9,13 @@ def calculate_ascii_comb(data):
 
 def validate_packet(packet,seq = None):
     checkAscii = calculate_ascii_comb(packet.data)
-    print(seq, packet.seq, packet.data)
-    if checkAscii != packet.checkAscii:
+    if (checkAscii != packet.checkAscii ) or (packet.data=="False" and packet.ackSeq!= None):
         raise CorruptedPacket("Corrupted Packet")
     if seq!=None and packet.ackSeq!=seq:
-        raise CorruptedPacket("Not expected seq, requesting again")
+        raise Exception("Not expected seq, requesting again")
     if seq==None and packet.ackSeq!=None:
-        raise CorruptedPacket("Not expected ack")
+        raise Exception("Not expected ack")
+
+
 
     
