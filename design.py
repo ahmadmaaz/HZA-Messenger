@@ -9,14 +9,15 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QListWidgetItem
-from peer import start,send_button
+from PyQt5.QtWidgets import QListWidgetItem,QFileDialog
+from peer import start,send_button,send_file_to_server
 from message_emitter import MessageEmitter
 from sendWidget import Widget as sendWidget
 from receiveWidget import Widget as receiveWidget
 import threading
+import base64
 import resources_rc
-
+files_bytes={}
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -102,9 +103,12 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
         #
-        self.send_btn.clicked.connect(self.sendData)
+        self.send_btn.clicked.connect(self.send_data)
+        self.label.mousePressEvent= self.send_file
         self.emitter = MessageEmitter()  
         self.emitter.msg.connect(self.update_text_edit)
+        self.messageList.itemClicked.connect(self.handle_message_clicked)
+
 
 
     def retranslateUi(self, MainWindow):
@@ -112,20 +116,51 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "HZA-Messenger"))
         self.input.setPlaceholderText(_translate("MainWindow", "Enter your message here "))
         self.send_btn.setText(_translate("MainWindow", "Send"))
-    def sendData(self):
+    def send_data(self):
         receive_thread = threading.Thread(target=send_button,args=(self.input.text(),self.emitter,))
         receive_thread.start()
     def update_text_edit(self,message):
         widget= sendWidget()
+        messageToDisplay=message[1:]
         if(message[0]=="1"):
             widget=receiveWidget()
-        widget.label_2.setText(message[1:])
+        if "⁂" in message : #this is a file
+            parts= message.split("⁂")
+            file_name=parts[1]
+            if(len(parts)==3):
+                files_bytes[file_name]=parts[2]
+            messageToDisplay="⁂ " + file_name
+        widget.label_2.setText(messageToDisplay)
         item=QListWidgetItem()
         item.setSizeHint(widget.sizeHint() / 1.2)
         self.messageList.addItem(item)
         self.messageList.setItemWidget(item,widget)
         self.messageList.setMinimumWidth(widget.width())
         self.messageList.setCurrentRow(self.messageList.count()-1)
+    def send_file(self,event):
+        filename= QFileDialog.getOpenFileName()
+        receive_thread = threading.Thread(target=send_file_to_server,args=(filename[0],self.emitter,))
+        receive_thread.start()
+    def handle_message_clicked(self,item):
+        item_widget = self.messageList.itemWidget(item)
+        messageContent = item_widget.label_2.text()
+        if "⁂" not in messageContent:
+            return
+        file_name= messageContent[1:].strip()
+        if( file_name not in files_bytes.keys()): # the peer that sent the file is trying to download it 
+            return
+        encoded_data=files_bytes[file_name.strip()]
+        decoded_data = base64.b64decode(encoded_data)
+        file_path, _ = QFileDialog.getSaveFileName(None, "Save File", file_name, "All Files (*);;Text files (*.txt)")
+        if file_path:       
+            try:
+                with open(file_path, 'wb') as file:
+                    file.write(decoded_data)
+                print("File saved successfully.")
+            except Exception as e:
+                print("An error occurred while saving the file:", e)
+
+
 
 
 

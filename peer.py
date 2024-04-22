@@ -1,13 +1,19 @@
 import socket
 import pickle
 import threading
+import os
+import struct
 from packet import DataPacket
 from utils import calculate_ascii_comb, validate_packet
 from connection_state import ConnectionState
 from exceptions import CorruptedPacket,DropPacket
+import base64
+
 connection_state = ConnectionState.CLOSED
 sender_port = 0
 peer_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+current_port_file=0
+sender_port_file=0
 id= 0
 seq = 0  # Initialize seq
 clientSeq=-1
@@ -73,11 +79,88 @@ def send_button(msg,emitter):
         seq += len(data)
     emitter.msg.emit("0" + msg)
     id += 1
+
+def handle_client(client,emitter):
+    try:
+        file_name_length_data = client.recv(4)
+        file_name_length = struct.unpack('!I', file_name_length_data)[0]
+        file_name = client.recv(file_name_length).decode('utf-8')
+
+        file_size_data = client.recv(8)
+        file_size = struct.unpack('!Q', file_size_data)[0]
+        received_bytes = b""
+        total_received = 0
+
+        while total_received < file_size:
+            chunk = client.recv(4096)  # Receive in chunks
+            if not chunk:
+                break  # Connection closed unexpectedly
+            if b"<END>" in chunk:
+                chunk = chunk.split(b"<END>")[0]
+                received_bytes += chunk
+                break  # Break once the marker is encountered
+            total_received += len(chunk)
+            received_bytes += chunk
+        encoded_data = base64.b64encode(received_bytes).decode('utf-8')
+        emitter.msg.emit("1" + "⁂"+file_name.split('/')[-1]+"⁂"+encoded_data)
+        print(f"File '{file_name.split('/')[-1]}' received successfully.")
+
+    except Exception as e:
+        print(f"An error occurred while handling the client: {e}")
+    finally:
+        client.close()
+
+
+def listen_to_files(emitter):
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.bind(("localhost", current_port_file))
+    server.listen(5) 
+    try:
+        while True:
+            client, addr = server.accept()
+            print(f"Connection established with {addr}")
+            client_thread = threading.Thread(target=handle_client, args=(client,emitter))
+            client_thread.start()
+    except Exception as e:
+        print(f"An error occurred with the server: {e}")
+    finally:
+        server.close()
+
+def send_file_to_server(file_name,emitter):
+    try:
+        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client.connect(("localhost", sender_port_file))
+
+        if not os.path.isfile(file_name):
+            raise FileNotFoundError(f"File '{file_name}' not found.")
+
+        file_size = os.path.getsize(file_name)
+
+        file_name_bytes = file_name.encode('utf-8')
+        client.send(struct.pack('!I', len(file_name_bytes)))  # Send the length of the file name
+        client.send(file_name_bytes)  # Send the file name
+        client.send(struct.pack('!Q', file_size))  # Send the file size (Q for unsigned long long)
+
+        with open(file_name, "rb") as file:
+            while True:
+                data = file.read(4096)  
+                if not data:
+                    break
+                client.sendall(data)
+        client.send(b"<END>")
+        emitter.msg.emit("0" + "⁂"+file_name.split('/')[-1])
+
+    except Exception as e:
+        print(f"Error: {e}")
+    finally:
+        client.close()
 def start(emitter):
-    global running_socket,sender_port , id, seq
+    global running_socket,sender_port , id, seq,current_port_file,sender_port_file
     running_socket = int(input("current port: "))
     peer_socket.bind(('localhost', running_socket))
     sender_port = int(input("target port: "))
+    current_port_file = int(input("current port file: "))
+    sender_port_file=int(input("target port file: "))
     want_to_initiate = input("do you want to initiate connection (y or n): ")
 
     if want_to_initiate == "y":
@@ -99,7 +182,9 @@ def start(emitter):
 
     print("connection established")
     receive_thread = threading.Thread(target=listen_to_packets,args=(emitter,))
-    receive_thread.start()  
+    receive_thread.start()
+    receive_thread = threading.Thread(target=listen_to_files,args=(emitter,))
+    receive_thread.start() 
 
 
     
