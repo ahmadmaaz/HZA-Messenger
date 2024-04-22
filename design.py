@@ -32,7 +32,7 @@ class Ui_MainWindow(object):
         self.groupBox_3.setStyleSheet("QGroupBox{background-color:#fcfdff;border:0px}\n"
 "QLineEdit{border:1px solid #d8d9dc; border-radius:5px;}\n"
 "QPushButton{border-radius:5px; background-color:#ffffff;color: #004dfc; padding:7px;}\n"
-"QListWidget{border:0px;backgorund-color:#808080;}\n"
+"QListWidget{border:0px;background-color:#808080;}\n"
 "QPushButton:hover{\n"
 "     background-color:#f3f6fb;\n"
 "}\n"
