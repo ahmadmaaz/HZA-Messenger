@@ -154,15 +154,15 @@ def send_file_to_server(file_name,emitter):
         print(f"Error: {e}")
     finally:
         client.close()
-def start(emitter):
-    global running_socket,sender_port , id, seq,current_port_file,sender_port_file
-    running_socket = int(input("current port: "))
-    peer_socket.bind(('localhost', running_socket))
-    sender_port = int(input("target port: "))
-    current_port_file = int(input("current port file: "))
-    sender_port_file=int(input("target port file: "))
+def run(emitter,cs, sp,cpf,spf):
+    global current_socket,sender_port , id, seq,current_port_file,sender_port_file
+    peer_socket.bind(('localhost', cs))
+    current_socket=cs
+    sender_port=sp
+    current_port_file=cpf
+    sender_port_file=spf
+    print( cs, sp , cpf,spf)
     want_to_initiate = input("do you want to initiate connection (y or n): ")
-
     if want_to_initiate == "y":
         print("trying to connect")
         send_packet_with_timeout(DataPacket(id, seq, "SYN", False, calculate_ascii_comb("SYN")))

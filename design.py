@@ -10,7 +10,7 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QListWidgetItem,QFileDialog
-from peer import start,send_button,send_file_to_server
+from peer import send_button,send_file_to_server
 from message_emitter import MessageEmitter
 from sendWidget import Widget as sendWidget
 from receiveWidget import Widget as receiveWidget
@@ -18,6 +18,8 @@ import threading
 import base64
 import resources_rc
 files_bytes={}
+import sys
+
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -164,12 +166,4 @@ class Ui_MainWindow(object):
 
 
 
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    MainWindow = QtWidgets.QMainWindow()
-    ui = Ui_MainWindow()
-    ui.setupUi(MainWindow)
-    start(ui.emitter)
-    MainWindow.show()
-    sys.exit(app.exec_())
+
