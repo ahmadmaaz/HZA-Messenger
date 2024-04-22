@@ -9,7 +9,7 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QListWidgetItem,QFileDialog
+from PyQt5.QtWidgets import QListWidgetItem,QFileDialog,QMessageBox
 from peer import send_button,send_file_to_server
 from message_emitter import MessageEmitter
 from sendWidget import Widget as sendWidget
@@ -119,8 +119,16 @@ class Ui_MainWindow(object):
         self.input.setPlaceholderText(_translate("MainWindow", "Enter your message here "))
         self.send_btn.setText(_translate("MainWindow", "Send"))
     def send_data(self):
+        if(self.input.text().strip()==""):
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Warning)
+            msg.setText("you can submit empty label even if it is with spaces ;p")
+            msg.setWindowTitle("Input is empty")
+            msg.exec_()
+            return;
         receive_thread = threading.Thread(target=send_button,args=(self.input.text(),self.emitter,))
         receive_thread.start()
+        self.input.setText("")
     def update_text_edit(self,message):
         widget= sendWidget()
         messageToDisplay=message[1:]
