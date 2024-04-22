@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>108</height>
+    <height>110</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -75,7 +75,7 @@ QLabel{color:#4f596f}</string>
            <item>
             <widget class="QLabel" name="label_2">
              <property name="sizePolicy">
-              <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+              <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>

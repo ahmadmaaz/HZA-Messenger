@@ -32,7 +32,7 @@ class Ui_MainWindow(object):
         self.groupBox_3.setStyleSheet("QGroupBox{background-color:#fcfdff;border:0px}\n"
 "QLineEdit{border:1px solid #d8d9dc; border-radius:5px;}\n"
 "QPushButton{border-radius:5px; background-color:#ffffff;color: #004dfc; padding:7px;}\n"
-"QListWidget{border:0px;background-color:#808080;}\n"
+"QListWidget{border:0px;background-color:#d3d3d3;}\n"
 "QPushButton:hover{\n"
 "     background-color:#f3f6fb;\n"
 "}\n"
@@ -103,7 +103,6 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
         #
         self.send_btn.clicked.connect(self.sendData)
-
         self.emitter = MessageEmitter()  
         self.emitter.msg.connect(self.update_text_edit)
 
@@ -122,7 +121,7 @@ class Ui_MainWindow(object):
             widget=receiveWidget()
         widget.label_2.setText(message[1:])
         item=QListWidgetItem()
-        item.setSizeHint(widget.sizeHint())
+        item.setSizeHint(widget.sizeHint() / 1.2)
         self.messageList.addItem(item)
         self.messageList.setItemWidget(item,widget)
         self.messageList.setMinimumWidth(widget.width())
