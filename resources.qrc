@@ -1,0 +1,7 @@
+<RCC>
+  <qresource prefix="sources">
+    <file>arrow.ico</file>
+    <file>attach.ico</file>
+    <file>user.png</file>
+  </qresource>
+</RCC>

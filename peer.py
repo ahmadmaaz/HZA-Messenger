@@ -30,7 +30,7 @@ def send_packet_with_timeout(dataPacket):
             pass
 def send_packet(dataPacket):
     peer_socket.sendto(pickle.dumps(dataPacket), ('localhost', sender_port))
-def listen_to_packets():
+def listen_to_packets(emitter):
     global clientSeq
     chunks = set()
     while True:
@@ -39,8 +39,9 @@ def listen_to_packets():
             if peer1_address[1] != sender_port:
                 raise Exception("Received packet from different port")
             packet = pickle.loads(message)
-            if(packet.data=="SYNACK"):
-                send_packet(pickle.dumps(DataPacket(id, seq, "ACK", False, calculate_ascii_comb("ACK"),0)))
+            if packet.data in ["SYNACK","SYN"] and packet.seq==0:  # a peer is still stuck in handshake
+                msgToSend= "ACK" if packet.data=="SYNACK" else "SYNACK"
+                send_packet(pickle.dumps(DataPacket(id, seq, msgToSend, False, calculate_ascii_comb(msgToSend),0)))
                 continue
             if clientSeq >=packet.seq:
                 send_packet(DataPacket(id, seq, "True", False, calculate_ascii_comb("True"),packet.seq))
@@ -48,9 +49,10 @@ def listen_to_packets():
             validate_packet(packet,seq=None,clientSeq=clientSeq)
             chunks.add((packet.data, packet.seq))
             clientSeq=packet.seq
+            print(packet.data)
             if packet.finalChunk:
                 sorted_chunks = sorted(chunks, key=lambda x: x[1])
-                print(''.join(chunk[0] for chunk in sorted_chunks))
+                emitter.msg.emit("1" + ''.join(chunk[0] for chunk in sorted_chunks))
                 chunks.clear()
             send_packet(DataPacket(id, seq, "True", False, calculate_ascii_comb("True"),packet.seq))
         except CorruptedPacket as e:
@@ -60,18 +62,19 @@ def listen_to_packets():
             print(e)
         except Exception as e:
             pass
-def listen_to_input():
+def send_button(msg,emitter):
     global id 
     global seq
-    while True:
-        msg = input("What do you want to send: ")
-        message_parts = [msg[i:i + 6] for i in range(0, len(msg), 6)]
-        for i in range(0, len(message_parts)):
-            data = message_parts[i]
-            send_packet_with_timeout(DataPacket(id, seq, data, i == len(message_parts) - 1, calculate_ascii_comb(data)))
-            seq += len(data)
-        id += 1
-if __name__ == "__main__":
+    print(msg)
+    message_parts = [msg[i:i + 6] for i in range(0, len(msg), 6)]
+    for i in range(0, len(message_parts)):
+        data = message_parts[i]
+        send_packet_with_timeout(DataPacket(id, seq, data, i == len(message_parts) - 1, calculate_ascii_comb(data)))
+        seq += len(data)
+    emitter.msg.emit("0" + msg)
+    id += 1
+def start(emitter):
+    global running_socket,sender_port , id, seq
     running_socket = int(input("current port: "))
     peer_socket.bind(('localhost', running_socket))
     sender_port = int(input("target port: "))
@@ -81,17 +84,23 @@ if __name__ == "__main__":
         print("trying to connect")
         send_packet_with_timeout(DataPacket(id, seq, "SYN", False, calculate_ascii_comb("SYN")))
         connection_state = ConnectionState.SYN_SENT
+        id+=1
+        seq+= len("SYN")
         send_packet(DataPacket(id, seq, "ACK", False, calculate_ascii_comb("ACK"),0))
+        id+=1
+        seq+= len("ACK")
         connection_state = ConnectionState.ESTABLISHED
     else:
         message, peer1_address = peer_socket.recvfrom(1000)
         send_packet_with_timeout(DataPacket(id, seq, "SYNACK", False, calculate_ascii_comb("SYNACK"),0))
+        id+=1
+        seq+= len("SYNACK")
         connection_state = ConnectionState.ESTABLISHED
 
     print("connection established")
-    receive_thread = threading.Thread(target=listen_to_packets)
-    receive_thread.start()
-    receive_thread = threading.Thread(target=listen_to_input)
-    receive_thread.start()
+    receive_thread = threading.Thread(target=listen_to_packets,args=(emitter,))
+    receive_thread.start()  
+
+
     
     
