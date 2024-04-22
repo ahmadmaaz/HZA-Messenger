@@ -68,7 +68,7 @@ def listen_to_packets(emitter):
             print(e)
         except Exception as e:
             pass
-def send_button(msg,emitter):
+def send_button(msg,emitter, callback=None):
     global id 
     global seq
     print(msg)
@@ -79,6 +79,8 @@ def send_button(msg,emitter):
         seq += len(data)
     emitter.msg.emit("0" + msg)
     id += 1
+    if callback:
+        callback()
 
 def handle_client(client,emitter):
     try:

@@ -119,14 +119,17 @@ class Ui_MainWindow(object):
         self.input.setPlaceholderText(_translate("MainWindow", "Enter your message here "))
         self.send_btn.setText(_translate("MainWindow", "Send"))
     def send_data(self):
-        if(self.input.text().strip()==""):
+        if(self.input.text().strip()==""): # In case it was empty input, drop it before sending
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Warning)
             msg.setText("you can submit empty label even if it is with spaces ;p")
             msg.setWindowTitle("Input is empty")
             msg.exec_()
             return;
-        receive_thread = threading.Thread(target=send_button,args=(self.input.text(),self.emitter,))
+        self.send_btn.setEnabled(False)
+        #lambda/ call back function to re-enable the button after sending packet is done 
+        #This will prevent 2 messages overlapping ( the other peer will start receiving packets for 2 diff message ids )
+        receive_thread = threading.Thread(target=send_button,args=(self.input.text(),self.emitter,lambda: self.send_btn.setEnabled(True))) 
         receive_thread.start()
         self.input.setText("")
     def update_text_edit(self,message):
