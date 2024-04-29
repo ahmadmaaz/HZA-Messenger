@@ -55,6 +55,9 @@ QPushButton:pressed{
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_3">
           <item>
+           <widget class="QOpenGLWidget" name="openGLWidget"/>
+          </item>
+          <item>
            <widget class="QListWidget" name="messageList">
             <property name="verticalScrollBarPolicy">
              <enum>Qt::ScrollBarAlwaysOff</enum>
