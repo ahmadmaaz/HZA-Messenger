@@ -9,24 +9,31 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-import resources_rc
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
+        MainWindow.setEnabled(True)
         MainWindow.resize(458, 582)
         MainWindow.setMinimumSize(QtCore.QSize(458, 582))
         MainWindow.setMaximumSize(QtCore.QSize(458, 582))
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/sources/HZAL.png"), QtGui.QIcon.Normal, QtGui.QIcon.On)
+        MainWindow.setWindowIcon(icon)
+        MainWindow.setAutoFillBackground(False)
         MainWindow.setDocumentMode(False)
+        MainWindow.setTabShape(QtWidgets.QTabWidget.Rounded)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
+        self.centralwidget.setStyleSheet("")
         self.centralwidget.setObjectName("centralwidget")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.centralwidget)
         self.verticalLayout.setObjectName("verticalLayout")
         self.groupBox_3 = QtWidgets.QGroupBox(self.centralwidget)
         self.groupBox_3.setStyleSheet("QGroupBox{background-color:#fcfdff;border:0px}\n"
 "QLineEdit{border:1px solid #d8d9dc; border-radius:5px;}\n"
-"QPushButton{border-radius:5px; background-color:#ffffff;color: #004dfc; padding:7px;}\n"
-"QListWidget{border:0px;background-color:#d3d3d3;}\n"
+"QPushButton{border-radius:5px; background-color:#ffffff;color: #004dfc; padding:7px}\n"
+"QListWidget{border:0px;background-color:transparent;}\n"
 "QPushButton:hover{\n"
 "     background-color:#f3f6fb;\n"
 "}\n"
@@ -42,6 +49,9 @@ class Ui_MainWindow(object):
         self.groupBox.setObjectName("groupBox")
         self.verticalLayout_3 = QtWidgets.QVBoxLayout(self.groupBox)
         self.verticalLayout_3.setObjectName("verticalLayout_3")
+        self.openGLWidget = QtWidgets.QOpenGLWidget(self.groupBox)
+        self.openGLWidget.setObjectName("openGLWidget")
+        self.verticalLayout_3.addWidget(self.openGLWidget)
         self.messageList = QtWidgets.QListWidget(self.groupBox)
         self.messageList.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.messageList.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
@@ -71,15 +81,20 @@ class Ui_MainWindow(object):
         self.label.setObjectName("label")
         self.horizontalLayout.addWidget(self.label)
         self.input = QtWidgets.QLineEdit(self.groupBox_2)
-        self.input.setStyleSheet("QLineEdit{ padding:2px; }")
+        self.input.setStyleSheet("QLineEdit{ padding:6px; }")
+        self.input.setText("")
+        self.input.setMaxLength(512)
+        self.input.setEchoMode(QtWidgets.QLineEdit.Normal)
+        self.input.setClearButtonEnabled(True)
         self.input.setObjectName("input")
         self.horizontalLayout.addWidget(self.input)
         self.send_btn = QtWidgets.QPushButton(self.groupBox_2)
         self.send_btn.setCursor(QtGui.QCursor(QtCore.Qt.CrossCursor))
         self.send_btn.setLayoutDirection(QtCore.Qt.RightToLeft)
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/sources/arrow.ico"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.send_btn.setIcon(icon)
+        self.send_btn.setStyleSheet("background-color: #649fed; color:white")
+        icon1 = QtGui.QIcon()
+        icon1.addPixmap(QtGui.QPixmap(":/sources/arrow.ico"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.send_btn.setIcon(icon1)
         self.send_btn.setObjectName("send_btn")
         self.horizontalLayout.addWidget(self.send_btn)
         self.verticalLayout_2.addWidget(self.groupBox_2)
@@ -92,22 +107,18 @@ class Ui_MainWindow(object):
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
+        self.toolBar = QtWidgets.QToolBar(MainWindow)
+        self.toolBar.setObjectName("toolBar")
+        MainWindow.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar)
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
-    
-
-
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "HZA-Messenger"))
-        self.input.setPlaceholderText(_translate("MainWindow", "Enter your message here "))
+        MainWindow.setWindowTitle(_translate("MainWindow", "HZA"))
+        self.input.setToolTip(_translate("MainWindow", "input to send message"))
+        self.input.setPlaceholderText(_translate("MainWindow", "Enter your message here..."))
         self.send_btn.setText(_translate("MainWindow", "Send"))
-    
-
-
-
-
-
-
+        self.toolBar.setWindowTitle(_translate("MainWindow", "toolBar"))
+import resources_rc

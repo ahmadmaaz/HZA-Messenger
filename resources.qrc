@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="sources">
+    <file>HZAL.png</file>
     <file>arrow.ico</file>
     <file>attach.ico</file>
     <file>user.png</file>
