@@ -47,7 +47,8 @@ class ChatApp(QMainWindow,window):
             messageToDisplay="⁂ " + file_name
         widget.label_2.setText(messageToDisplay)
         item=QListWidgetItem()
-        item.setSizeHint(widget.sizeHint() / 1.2)
+        item.setSizeHint(widget.sizeHint() / 1.4)
+    
         self.messageList.addItem(item)
         self.messageList.setItemWidget(item,widget)
         self.messageList.setMinimumWidth(widget.width())
