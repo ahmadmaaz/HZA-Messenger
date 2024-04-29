@@ -35,10 +35,10 @@ class ChatApp(QMainWindow,window):
         receive_thread.start()
         self.input.setText("")
     def update_text_edit(self,message):
-        widget= sendWidget()
+        widget= receiveWidget()
         messageToDisplay=message[1:]
         if(message[0]=="1"):
-            widget=receiveWidget()
+            widget=sendWidget()
         if "⁂" in message : #this is a file
             parts= message.split("⁂")
             file_name=parts[1]

@@ -22,7 +22,7 @@ def send_packet_with_timeout(dataPacket):
         try:
             peer_socket.sendto(pickle.dumps(dataPacket), ('localhost', sender_port))
             peer_socket.settimeout(.2)
-            message, peer1_address = peer_socket.recvfrom(1000)
+            message, peer1_address = peer_socket.recvfrom(1060)
             packet = pickle.loads(message)
             validate_packet(packet,seq,clientSeq=clientSeq)
             peer_socket.settimeout(0)
@@ -41,7 +41,7 @@ def listen_to_packets(emitter):
     chunks = set()
     while True:
         try:
-            message, peer1_address = peer_socket.recvfrom(1000)
+            message, peer1_address = peer_socket.recvfrom(1060)
             if peer1_address[1] != sender_port:
                 raise Exception("Received packet from different port")
             packet = pickle.loads(message)
@@ -49,6 +49,8 @@ def listen_to_packets(emitter):
                 msgToSend= "ACK" if packet.data=="SYNACK" else "SYNACK"
                 send_packet(pickle.dumps(DataPacket(id, seq, msgToSend, False, calculate_ascii_comb(msgToSend),0)))
                 continue
+            # if clientSeq +1000 !=packet.seq:
+            #     continue
             if clientSeq >=packet.seq:
                 send_packet(DataPacket(id, seq, "True", False, calculate_ascii_comb("True"),packet.seq))
                 continue
@@ -71,8 +73,7 @@ def listen_to_packets(emitter):
 def send_button(msg,emitter, callback=None):
     global id 
     global seq
-    print(msg)
-    message_parts = [msg[i:i + 6] for i in range(0, len(msg), 6)]
+    message_parts = [msg[i:i + 1000] for i in range(0, len(msg), 1000)]
     for i in range(0, len(message_parts)):
         data = message_parts[i]
         send_packet_with_timeout(DataPacket(id, seq, data, i == len(message_parts) - 1, calculate_ascii_comb(data)))
@@ -176,7 +177,7 @@ def run(emitter,cs, sp,cpf,spf):
         seq+= len("ACK")
         connection_state = ConnectionState.ESTABLISHED
     else:
-        message, peer1_address = peer_socket.recvfrom(1000)
+        message, peer1_address = peer_socket.recvfrom(1060)
         send_packet_with_timeout(DataPacket(id, seq, "SYNACK", False, calculate_ascii_comb("SYNACK"),0))
         id+=1
         seq+= len("SYNACK")
