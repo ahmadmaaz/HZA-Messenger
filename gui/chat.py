@@ -121,4 +121,4 @@ class Ui_MainWindow(object):
         self.input.setPlaceholderText(_translate("MainWindow", "Enter your message here..."))
         self.send_btn.setText(_translate("MainWindow", "Send"))
         self.toolBar.setWindowTitle(_translate("MainWindow", "toolBar"))
-import resources_rc
+import gui.resources_rc as resources_rc

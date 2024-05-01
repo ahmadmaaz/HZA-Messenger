@@ -1,9 +1,9 @@
 from PyQt5.QtWidgets import QMainWindow, QListWidgetItem,QFileDialog,QMessageBox
-from chat import Ui_MainWindow as window
+from gui.chat import Ui_MainWindow as window
 from peer import send_button,send_file_to_server
-from message_emitter import MessageEmitter
-from sendWidget import Widget as sendWidget
-from receiveWidget import Widget as receiveWidget
+from gui.message_emitter import MessageEmitter
+from gui.sendWidget import Widget as sendWidget
+from gui.receiveWidget import Widget as receiveWidget
 import threading
 import base64 
 files_bytes={}

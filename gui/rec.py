@@ -85,4 +85,4 @@ class Ui_Form(object):
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
         Form.setWindowTitle(_translate("Form", "Form"))
-import resources_rc
+import gui.resources_rc as resources_rc

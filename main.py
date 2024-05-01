@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QDialog,QApplication
 from PyQt5 import QtWidgets
-from mainChat import ChatApp
+from gui.mainChat import ChatApp
 from peer import run as run_peer
 
 import sys
