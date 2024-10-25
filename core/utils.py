@@ -11,7 +11,7 @@ def calculate_ascii_comb(data):
 
 def validate_packet(packet, seq=None, clientSeq=-1):
     check_ascii = calculate_ascii_comb(packet.data)
-    if (check_ascii != packet.checkAscii) or (packet.data == "False" and packet.ackSeq is not None):
+    if (check_ascii != packet.check_ascii) or (packet.data == "False" and packet.ack_seq is not None):
         raise CorruptedPacket("Corrupted Packet")
-    if seq == None and packet.ackSeq is not None:
+    if seq == None and packet.ack_seq is not None:
         raise DropPacket("Not expected ack")

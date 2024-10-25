@@ -7,7 +7,7 @@ import threading
 
 class FileReceiver:
 
-    def __init__(self, store: Store,message_emitter):
+    def __init__(self, store: Store, message_emitter):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.bind(("localhost", store.get_current_port_file()))
         self.thread = threading.Thread(target=self.listen_to_files, args=(message_emitter,))

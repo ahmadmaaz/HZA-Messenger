@@ -4,6 +4,7 @@ from core.packet import DataPacket
 from core.utils import calculate_ascii_comb, validate_packet
 from .store import *
 
+
 class MessageReceiver:
     def __init__(self, message_sender, store: Store, message_emitter):
         self.message_sender = message_sender
@@ -22,9 +23,9 @@ class MessageReceiver:
                     raise Exception("Received packet from different port")
                 packet = pickle.loads(message)
                 if packet.data in ["SYNACK", "SYN"] and packet.seq == 0:  # a peer is still stuck in handshake
-                    msgToSend = "ACK" if packet.data == "SYNACK" else "SYNACK"
+                    msg_to_send = "ACK" if packet.data == "SYNACK" else "SYNACK"
                     message_sender.send_packet(pickle.dumps(
-                        DataPacket(id, self.store.get_seq(), msgToSend, False, calculate_ascii_comb(msgToSend), 0)))
+                        DataPacket(id, self.store.get_seq(), msg_to_send, False, calculate_ascii_comb(msg_to_send), 0)))
                     continue
                 if self.store.get_client_seq() >= packet.seq:
                     message_sender.send_packet(
@@ -33,7 +34,7 @@ class MessageReceiver:
                 validate_packet(packet, seq=None, clientSeq=self.store.get_client_seq())
                 chunks.add((packet.data, packet.seq))
                 self.store.set_client_seq(packet.seq)
-                if packet.finalChunk:
+                if packet.final_chunk:
                     sorted_chunks = sorted(chunks, key=lambda x: x[1])
                     emitter.msg.emit("1" + ''.join(chunk[0] for chunk in sorted_chunks))
                     chunks.clear()
