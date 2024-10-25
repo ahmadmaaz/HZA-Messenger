@@ -1,7 +1,6 @@
 from PyQt5.QtWidgets import QDialog,QApplication
 from PyQt5 import QtWidgets
 from gui.mainChat import ChatApp
-from peer import run as run_peer
 
 import sys
 
@@ -24,7 +23,7 @@ if __name__ == "__main__":
         cpf=12002
     app = QtWidgets.QApplication(sys.argv)
     chat_app = ChatApp()
-    run_peer(chat_app.emitter,cs,sp,cpf,spf)
+    chat_app.peer.run(cs,sp,cpf,spf,chat_app.emitter)
     chat_app.show()
 
     sys.exit(app.exec_())
