@@ -1,6 +1,6 @@
 > HZA Messenger
 >
-> Hadi Al Hassan, Ahmad Al Maaz, Zeina Merhhad
+> Hadi Al Hassan, Ahmad Al Maaz, Zeina Merchad
 >
 > April 22, 2024
 
